@@ -10,10 +10,11 @@ public class CircleRotate : Circle
 
     public override void RotateCircle()
     {
-        SetSpeedRotation();
-
-        SetRotation(rotationSpeed);
-
+        if (_isRotate)
+        {
+            SetSpeedRotation();
+            SetRotation(rotationSpeed);
+        }
     }
 
     private void SetSpeedRotation()
@@ -49,5 +50,4 @@ public class CircleRotate : Circle
             transform.position.y,
             transform.rotation.z - speed);
     }
-
 }

@@ -5,27 +5,34 @@ public class UsedKnife : MonoBehaviour
 {
     
     public bool KnifeHitKnife => _knifeHitKnife;
-    public bool IsActive => _isActive;
+    public bool IsActive => _knifeIsActive;
 
     private ScoreCounter _scoreCounter;
+
+    protected MoneyCounter _moneyCounter;
+
 
     [SerializeField] private Rigidbody2D _rb2d;
     [SerializeField] private float _knifeRicochet = 1f;
 
     private KnifeStack _knifeStack;
     
-    [SerializeField] protected Vector2 _capsuleColliderOffset;
-    [SerializeField] protected Vector2 _capsuleColliderSize;
+    protected Vector2 _capsuleColliderOffset;
+    protected Vector2 _capsuleColliderSize;
 
 
     private CapsuleCollider2D _capsuleCollider;
-    private bool _isActive;
+    private bool _knifeIsActive;
     private bool _knifeHitKnife;
 
     private void Start()
     {
         _knifeStack = FindObjectOfType<KnifeStack>();
+
         _scoreCounter = FindObjectOfType<ScoreCounter>();
+
+        _moneyCounter = FindObjectOfType<MoneyCounter>();
+
         _rb2d = GetComponent<Rigidbody2D>();
         _capsuleColliderOffset = new Vector2(0.0384099893f, -1.49900138f);
         _capsuleColliderSize = new Vector2(0.372321725f, 1.71944439f);
@@ -34,7 +41,7 @@ public class UsedKnife : MonoBehaviour
 
     private void OnEnable()
     {
-        _isActive = true;
+        _knifeIsActive = true;
     }
 
     public void TryThrow(float throwSpeed)
@@ -55,8 +62,8 @@ public class UsedKnife : MonoBehaviour
         else if (collision.gameObject.TryGetComponent(out CircleGO _))
         {
             OnCircleHit(collision);
+            Debug.Log("hit circle");
         }
-
     }
 
     private void OnCircleHit(Collision2D collision)
@@ -69,30 +76,43 @@ public class UsedKnife : MonoBehaviour
 
         transform.SetParent(collision.collider.transform);
 
-        SetCapsuleCollider();
+        SetSmallerCollider();
 
         if (_knifeStack.CurrentKnifeCount >= 0 && _knifeStack.CurrentKnifeCount <= _knifeStack.MaxKnifes)
         {
             _knifeStack.RemoveKnifeFromStack();
         }
+    }
 
-
+    private void OnTriggerEnter2D(Collider2D collision)
+    {
+        if (collision.TryGetComponent(out DestroyableApple item))
+        {
+            OnDestroyableItemHit(collision, item);
+            Debug.Log("hit destroyable item");
+        }
     }
 
     private void OnKnifeHitKnife()
     {
-        _isActive = false;
+        _knifeIsActive = false;
         _rb2d.velocity = Vector3.zero;
         _knifeHitKnife = true;
         _rb2d.AddForce(new Vector2(0f, -_knifeRicochet), ForceMode2D.Impulse);
         _knifeStack.OnKnifeHit();
-        SetCapsuleCollider();
+        SetSmallerCollider();
+    }
+    private void OnDestroyableItemHit(Collider2D item, DestroyableApple apple)
+    {
+        Destroy(item.gameObject);
+        _moneyCounter.SetCoins(apple.Coin);
     }
 
-    private void SetCapsuleCollider()
+    private void SetSmallerCollider()
     {
         _capsuleCollider.offset = _capsuleColliderOffset;
 
         _capsuleCollider.size = _capsuleColliderSize;
     }
 }
+

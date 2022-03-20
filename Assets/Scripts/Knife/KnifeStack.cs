@@ -61,7 +61,6 @@ public class KnifeStack : MonoBehaviour
 
         _knifeList.RemoveAt(_knifeList.Count - 1);
 
-
         if (_knifeList.Count >= 0 && _knifeList.Count - 1 <= _maxKnifes)
         {
             if (_knifeList.Count - 1 >= 0)
